@@ -1,5 +1,9 @@
 import { Component } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
+import { UserService } from '../../services/user/user.service';
+import { SignUpUserRequest } from '../../models/interfaces/user/SignUpUserRequest';
+import { AuthRequest } from '../../models/interfaces/user/auth/authRequest';
+import { CookieService } from 'ngx-cookie-service';
 
 @Component({
   selector: 'app-home',
@@ -20,13 +24,39 @@ export class HomeComponent {
     password: ['', Validators.required]
   });
 
-  constructor(private formBuilder: FormBuilder) { }
+  constructor(
+    private formBuilder: FormBuilder, 
+    private userUservice: UserService,
+    private cookieService: CookieService) { }
 
   onSubmitLogin(): void {
-    console.log('login form data', this.loginForm.value);
+    if (this.loginForm.value && this.loginForm.valid){
+      this.userUservice.authUser(this.loginForm.value as AuthRequest)
+        .subscribe({
+          next: (response) => {
+            if (response){
+              this.cookieService.set('USER_INFO', response.token);
+              this.loginForm.reset();
+            }
+          },
+          error: (err) => console.log(err)
+        })
+    }
   }
 
   onSubmitCreateAccount(): void {
-    console.log('create account form data', this.createAccountForm.value);
+    if (this.createAccountForm.value && this.createAccountForm.valid){
+      this.userUservice.createAccount(this.createAccountForm.value as SignUpUserRequest)
+        .subscribe({
+          next: (response) => {
+            if (response) {
+              alert('user test create success!');
+              this.createAccountForm.reset();
+              this.loginCard = true;
+            }
+          },
+          error: (err) => console.log(err)
+        })
+    }
   }
 }
