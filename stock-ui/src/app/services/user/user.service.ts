@@ -4,8 +4,9 @@ import { environment } from '../../../environments/environment';
 import { SignUpUserRequest } from '../../models/interfaces/user/SignUpUserRequest';
 import { Observable } from 'rxjs';
 import { SignUpUserResponse } from '../../models/interfaces/user/SignUpUserResponse';
-import { AuthRequest } from '../../models/interfaces/user/auth/authRequest';
+import { AuthRequest } from '../../models/interfaces/user/auth/AuthRequest';
 import { AuthResponse } from '../../models/interfaces/user/auth/AuthResponse';
+import { CookieService } from 'ngx-cookie-service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,10 @@ import { AuthResponse } from '../../models/interfaces/user/auth/AuthResponse';
 export class UserService {
   private API_URL = environment.API_URL;
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private cookieService: CookieService
+  ) { }
 
   createAccount(requestDatas: SignUpUserRequest): Observable<SignUpUserResponse> {
     return this.http.post<SignUpUserResponse>(
@@ -25,5 +29,10 @@ export class UserService {
     return this.http.post<AuthResponse>(
       `${this.API_URL}/auth`, requestDatas
     )
+  }
+
+  isLoggedIn() : boolean {
+    const JWT_TOKEN = this.cookieService.get('USER_INFO'); 
+    return JWT_TOKEN ? true : false;
   }
 }

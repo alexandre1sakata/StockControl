@@ -2,8 +2,10 @@ import { Component } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { UserService } from '../../services/user/user.service';
 import { SignUpUserRequest } from '../../models/interfaces/user/SignUpUserRequest';
-import { AuthRequest } from '../../models/interfaces/user/auth/authRequest';
+import { AuthRequest } from '../../models/interfaces/user/auth/AuthRequest';
 import { CookieService } from 'ngx-cookie-service';
+import { MessageService } from 'primeng/api';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -27,7 +29,9 @@ export class HomeComponent {
   constructor(
     private formBuilder: FormBuilder, 
     private userUservice: UserService,
-    private cookieService: CookieService) { }
+    private cookieService: CookieService,
+    private messageService: MessageService,
+    private router: Router) { }
 
   onSubmitLogin(): void {
     if (this.loginForm.value && this.loginForm.valid){
@@ -37,9 +41,24 @@ export class HomeComponent {
             if (response){
               this.cookieService.set('USER_INFO', response.token);
               this.loginForm.reset();
+              this.router.navigate(['/dashboard']);
+
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Success',
+                detail: `Welcome ${response?.name}`,
+                life: 4000
+              })
             }
           },
-          error: (err) => console.log(err)
+          error: (err) => {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: `Login failed`,
+                life: 4000
+              })
+          }
         })
     }
   }
@@ -50,12 +69,25 @@ export class HomeComponent {
         .subscribe({
           next: (response) => {
             if (response) {
-              alert('user test create success!');
               this.createAccountForm.reset();
               this.loginCard = true;
+
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Success',
+                detail: `User created with success!`,
+                life: 4000
+              })
             }
           },
-          error: (err) => console.log(err)
+          error: (err) => {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: `Create account failed`,
+                life: 4000
+              })
+          }
         })
     }
   }
